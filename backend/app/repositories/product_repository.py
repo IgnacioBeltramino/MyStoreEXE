@@ -1,12 +1,19 @@
-﻿from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
 
 from app.models.product import Product
 
 
-def get_all(db: Session, tenant_id: int, category_id: int | None = None) -> list[Product]:
+def get_all(
+    db: Session,
+    tenant_id: int,
+    category_id: int | None = None,
+    include_inactive: bool = False,
+) -> list[Product]:
     q = db.query(Product).filter(Product.tenant_id == tenant_id)
     if category_id is not None:
         q = q.filter(Product.category_id == category_id)
+    if not include_inactive:
+        q = q.filter(Product.is_active.is_(True))
     return q.order_by(Product.sort_order, Product.id).all()
 
 
@@ -31,5 +38,6 @@ def update(db: Session, product: Product, data: dict) -> Product:
 
 
 def delete(db: Session, product: Product) -> None:
+    """Baja logica: se marca inactivo para conservar el historial."""
     product.is_active = False
     db.commit()

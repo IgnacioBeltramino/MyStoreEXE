@@ -20,6 +20,8 @@ env/
 node_modules/
 admin/frontend/dist/
 admin/frontend/.vite/
+admin/frontend/tsconfig.tsbuildinfo
+*.tsbuildinfo
 
 # Logs
 *.log
@@ -40,3 +42,6 @@ __pycache__/
 
 # Docker
 *.dockerignore
+
+# Tests
+.pytest_cache/

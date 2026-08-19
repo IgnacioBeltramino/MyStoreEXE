@@ -1,4 +1,4 @@
-﻿services:
+services:
   db:
     image: postgres:16
     environment:
@@ -9,18 +9,38 @@
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    # Sin healthcheck el backend arranca antes de que Postgres acepte
+    # conexiones y las migraciones fallan en el primer intento.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mystoreexe -d mystoreexe"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build: ./backend
     ports:
       - "8000:8000"
+    # Las variables del .env (SEED_*, etc) entran al contenedor. Lo de
+    # "environment" pisa al env_file: dentro de la red de compose la base
+    # es "db", no "localhost".
+    env_file:
+      - .env
     environment:
       DATABASE_URL: postgresql://mystoreexe:mystoreexe@db:5432/mystoreexe
-      SECRET_KEY: dev-secret-change-in-production
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./backend:/app
+      - ./db:/db
+      - ./alembic.ini:/alembic.ini
+    # Aplica las migraciones pendientes antes de levantar la API.
+    command: >
+      sh -c "alembic -c /alembic.ini upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
 volumes:
   postgres_data:

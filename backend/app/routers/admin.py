@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.dependencies.auth import get_current_user
@@ -6,14 +6,30 @@ from app.dependencies.database import get_db
 from app.dependencies.tenant import get_tenant
 from app.models.admin_user import AdminUser
 from app.models.tenant import Tenant
-from app.repositories import store_profile_repository, category_repository, product_repository
+from app.repositories import store_profile_repository, category_repository, product_repository, stats_repository
 from app.schemas.admin import (
     CategoryCreate, CategoryUpdate, CategoryResponse,
     ProductCreate, ProductUpdate, ProductResponse,
     StoreProfileUpdate, StoreProfileResponse,
+    StatsResponse,
 )
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+def _assert_category_belongs_to_tenant(db: Session, tenant_id: int, category_id: int | None) -> None:
+    """Evita que un producto se cuelgue de una categoria de otro tenant.
+
+    Sin este chequeo alcanza con mandar un category_id ajeno en el body para
+    cruzar datos entre tiendas, aunque el producto se cree en el tenant correcto.
+    """
+    if category_id is None:
+        return
+    if not category_repository.get_by_id(db, tenant_id, category_id):
+        raise HTTPException(
+            status_code=422,  # UNPROCESSABLE_ENTITY: la constante cambio de nombre entre versiones de Starlette
+            detail="La categoria no existe en esta tienda",
+        )
 
 
 # --- Perfil ---
@@ -47,11 +63,12 @@ def upsert_profile(
 
 @router.get("/categories", response_model=list[CategoryResponse])
 def list_categories(
+    include_inactive: bool = False,
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_tenant),
     _: AdminUser = Depends(get_current_user),
 ) -> list[CategoryResponse]:
-    return category_repository.get_all(db, tenant.id)
+    return category_repository.get_all(db, tenant.id, include_inactive)
 
 
 @router.post("/categories", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
@@ -96,11 +113,12 @@ def delete_category(
 @router.get("/products", response_model=list[ProductResponse])
 def list_products(
     category_id: int | None = None,
+    include_inactive: bool = False,
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_tenant),
     _: AdminUser = Depends(get_current_user),
 ) -> list[ProductResponse]:
-    return product_repository.get_all(db, tenant.id, category_id)
+    return product_repository.get_all(db, tenant.id, category_id, include_inactive)
 
 
 @router.post("/products", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
@@ -110,6 +128,7 @@ def create_product(
     tenant: Tenant = Depends(get_tenant),
     _: AdminUser = Depends(get_current_user),
 ) -> ProductResponse:
+    _assert_category_belongs_to_tenant(db, tenant.id, data.category_id)
     return product_repository.create(db, tenant.id, data.model_dump())
 
 
@@ -124,7 +143,10 @@ def update_product(
     product = product_repository.get_by_id(db, tenant.id, product_id)
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
-    return product_repository.update(db, product, data.model_dump(exclude_unset=True))
+    changes = data.model_dump(exclude_unset=True)
+    if "category_id" in changes:
+        _assert_category_belongs_to_tenant(db, tenant.id, changes["category_id"])
+    return product_repository.update(db, product, changes)
 
 
 @router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -138,3 +160,14 @@ def delete_product(
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
     product_repository.delete(db, product)
+
+
+# --- Dashboard ---
+
+@router.get("/stats", response_model=StatsResponse)
+def get_stats(
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
+    _: AdminUser = Depends(get_current_user),
+) -> StatsResponse:
+    return StatsResponse(**stats_repository.get_summary(db, tenant.id))

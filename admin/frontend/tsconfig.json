@@ -5,6 +5,8 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    /* Tipos de Vite: habilitan los imports de .css, .svg e import.meta.env */
+    "types": ["vite/client"],
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
@@ -12,7 +14,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "baseUrl": ".",
+    /* Sin baseUrl: TS 6 lo deprecio. "paths" se resuelve relativo a este archivo. */
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src"]

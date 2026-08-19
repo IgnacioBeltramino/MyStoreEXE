@@ -84,3 +84,13 @@ class ProductResponse(BaseModel):
     is_active: bool
 
     model_config = {"from_attributes": True}
+
+
+# --- Dashboard ---
+
+class StatsResponse(BaseModel):
+    active_products: int
+    active_categories: int
+    uncategorized_products: int
+    profile_complete: bool
+    store_name: str | None

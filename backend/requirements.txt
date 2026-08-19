@@ -1,9 +1,15 @@
-﻿fastapi
-uvicorn[standard]
-sqlalchemy
-alembic
-psycopg2-binary
-pydantic[email]
-python-dotenv
-python-jose[cryptography]
-passlib[bcrypt]
+# Rangos por version mayor: permiten parches y minors, bloquean breaking changes.
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+
+sqlalchemy>=2.0,<2.1
+alembic>=1.13,<2.0
+psycopg2-binary>=2.9,<3.0
+
+pydantic[email]>=2.7,<3.0
+python-dotenv>=1.0,<2.0
+
+# Auth. Se usa bcrypt directo en vez de passlib: passlib 1.7.4 depende del
+# modulo "crypt" de la stdlib, que Python 3.13 elimino, y no tiene release nuevo.
+python-jose[cryptography]>=3.3,<4.0
+bcrypt>=4.1,<6.0
