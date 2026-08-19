@@ -1,0 +1,26 @@
+﻿services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: mystoreexe
+      POSTGRES_PASSWORD: mystoreexe
+      POSTGRES_DB: mystoreexe
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://mystoreexe:mystoreexe@db:5432/mystoreexe
+      SECRET_KEY: dev-secret-change-in-production
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+
+volumes:
+  postgres_data:

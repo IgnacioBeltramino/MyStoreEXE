@@ -1,0 +1,65 @@
+﻿@import "tailwindcss";
+
+@theme {
+  --color-brand: #3b82f6;
+  --color-brand-hover: #2563eb;
+  --color-sidebar: #060609;
+  --color-bg: #08080f;
+  --color-surface: #0f0f1a;
+  --color-card: #12121e;
+  --color-border: rgba(255,255,255,0.06);
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans);
+  background: #08080f;
+  color: #e8e8f0;
+  overflow-x: hidden;
+}
+
+/* Fondo animado — orbes que se mueven lento */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  width: 600px;
+  height: 600px;
+  background: #3b82f6;
+  top: -200px;
+  left: -100px;
+  animation: orb-one 18s ease-in-out infinite alternate;
+}
+
+body::after {
+  width: 500px;
+  height: 500px;
+  background: #7c3aed;
+  bottom: -150px;
+  right: -100px;
+  animation: orb-two 22s ease-in-out infinite alternate;
+}
+
+@keyframes orb-one {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(120px, 80px) scale(1.1); }
+  66%  { transform: translate(60px, 180px) scale(0.95); }
+  100% { transform: translate(200px, 60px) scale(1.05); }
+}
+
+@keyframes orb-two {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-100px, -80px) scale(1.1); }
+  66%  { transform: translate(-60px, -200px) scale(0.9); }
+  100% { transform: translate(-180px, -50px) scale(1.08); }
+}
