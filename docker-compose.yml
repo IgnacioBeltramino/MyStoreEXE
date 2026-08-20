@@ -1,10 +1,14 @@
 services:
   db:
     image: postgres:16
+    # Las credenciales salen del .env, que no se commitea. Los defaults son
+    # solo para que un clon nuevo levante; en produccion se definen en el .env.
+    # Postgres solo las aplica al crear el volumen: si cambias la password con
+    # la base ya creada, hay que hacer ALTER USER (ver .env.example).
     environment:
-      POSTGRES_USER: mystoreexe
-      POSTGRES_PASSWORD: mystoreexe
-      POSTGRES_DB: mystoreexe
+      POSTGRES_USER: ${POSTGRES_USER:-mystoreexe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mystoreexe}
+      POSTGRES_DB: ${POSTGRES_DB:-mystoreexe}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -12,7 +16,7 @@ services:
     # Sin healthcheck el backend arranca antes de que Postgres acepte
     # conexiones y las migraciones fallan en el primer intento.
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mystoreexe -d mystoreexe"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mystoreexe} -d ${POSTGRES_DB:-mystoreexe}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -27,7 +31,8 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://mystoreexe:mystoreexe@db:5432/mystoreexe
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mystoreexe}:${POSTGRES_PASSWORD:-mystoreexe}@db:5432/${POSTGRES_DB:-mystoreexe}
+      APP_ENV: ${APP_ENV:-development}
       SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
     depends_on:

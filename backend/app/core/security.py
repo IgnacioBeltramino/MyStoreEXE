@@ -4,7 +4,17 @@ from datetime import datetime, timedelta, timezone
 import bcrypt
 from jose import JWTError, jwt
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-in-production")
+# Si esta clave se filtra, cualquiera puede firmarse un JWT y entrar como el
+# admin que quiera. Por eso en produccion no se acepta la de desarrollo.
+_DEV_SECRET_KEY = "dev-secret-change-in-production"
+SECRET_KEY = os.getenv("SECRET_KEY") or _DEV_SECRET_KEY
+
+if os.getenv("APP_ENV", "development").lower() == "production" and SECRET_KEY == _DEV_SECRET_KEY:
+    raise RuntimeError(
+        'SECRET_KEY sigue siendo la de desarrollo. Genera una propia con: '
+        'python -c "import secrets; print(secrets.token_urlsafe(48))"'
+    )
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 8
 

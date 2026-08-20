@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 from app.routers.auth import router as auth_router  # noqa: E402
 from app.routers.admin import router as admin_router  # noqa: E402
+from app.routers.store import router as store_router  # noqa: E402
 
 app = FastAPI(title="MyStoreEXE API")
 
@@ -25,6 +26,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(admin_router)
+app.include_router(store_router)
 
 
 @app.get("/health")
