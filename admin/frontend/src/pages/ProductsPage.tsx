@@ -260,7 +260,7 @@ export function ProductsPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Productos</h1>
-          <p className="text-gray-500 text-sm mt-1">Lo que se publica en tu tienda.</p>
+          <p className="text-gray-400 text-sm mt-1">Lo que se publica en tu tienda.</p>
         </div>
         <Button onClick={abrirNuevo}>
           <Plus size={16} />
@@ -317,10 +317,10 @@ export function ProductsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06] text-left">
-                  <th className="px-6 py-3 font-medium text-gray-500">Nombre</th>
-                  <th className="px-6 py-3 font-medium text-gray-500">Categoria</th>
-                  <th className="px-6 py-3 font-medium text-gray-500 text-right">Precio</th>
-                  <th className="px-6 py-3 font-medium text-gray-500 w-20">Orden</th>
+                  <th className="px-6 py-3 font-medium text-gray-400">Nombre</th>
+                  <th className="px-6 py-3 font-medium text-gray-400">Categoria</th>
+                  <th className="px-6 py-3 font-medium text-gray-400 text-right">Precio</th>
+                  <th className="px-6 py-3 font-medium text-gray-400 w-20">Orden</th>
                   <th className="px-6 py-3 w-24" />
                 </tr>
               </thead>
@@ -335,7 +335,7 @@ export function ProductsPage() {
                       <td className="px-6 py-3.5">
                         <p className="font-medium text-white">{producto.name}</p>
                         {producto.description && (
-                          <p className="mt-0.5 text-xs text-gray-600 line-clamp-1">
+                          <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">
                             {producto.description}
                           </p>
                         )}

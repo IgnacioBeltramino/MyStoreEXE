@@ -15,6 +15,7 @@ class StoreProfilePublic(BaseModel):
     phone: str | None
     address: str | None
     logo_url: str | None
+    whatsapp: str | None
 
     model_config = {"from_attributes": True}
 
@@ -28,13 +29,28 @@ class StoreCategoryPublic(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class StoreImagePublic(BaseModel):
+    url: str
+    alt: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class StoreAttributePublic(BaseModel):
+    label: str
+    value: str
+
+
 class StoreProductPublic(BaseModel):
     id: int
     category_id: int | None
     name: str
     description: str | None
     price: Decimal
-    image_url: str | None
     sort_order: int
+    # La ficha tecnica y la galeria, en el orden en que se cargaron. La portada
+    # es images[0]; si la lista viene vacia, el front pone un placeholder.
+    attributes: list[StoreAttributePublic]
+    images: list[StoreImagePublic]
 
     model_config = {"from_attributes": True}

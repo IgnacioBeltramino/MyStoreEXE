@@ -14,7 +14,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 p-12 text-center">
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 text-gray-600">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 text-gray-500">
           <Icon size={22} />
         </div>
         <div>

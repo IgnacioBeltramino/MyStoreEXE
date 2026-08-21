@@ -20,6 +20,9 @@ class StoreProfile(Base):
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     address: Mapped[str | None] = mapped_column(String(500), nullable=True)
     logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # Numero para el boton de consulta de la tienda publica. Solo digitos con
+    # codigo de pais, sin + ni espacios: es el formato que pide wa.me.
+    whatsapp: Mapped[str | None] = mapped_column(String(50), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
     tenant: Mapped["Tenant"] = relationship("Tenant", back_populates="store_profile")

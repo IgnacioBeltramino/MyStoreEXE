@@ -45,6 +45,33 @@ Credenciales por defecto: las de `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`.
 > resuelve. Para simular otra tienda, agregala en `C:\Windows\System32\drivers\etc\hosts`
 > y sembrala con `--domain`.
 
+## Gestion de la plataforma
+
+Las tiendas y sus cuentas de admin se manejan con `backend/scripts/manage.py`.
+Esto es para el dueno de la plataforma: el catalogo lo maneja cada cliente
+desde su panel.
+
+```bash
+docker compose exec backend python scripts/manage.py tiendas
+docker compose exec backend python scripts/manage.py crear-tienda --domain tienda1.com --name "Tienda Uno" --email dueno@tienda1.com
+docker compose exec backend python scripts/manage.py crear-admin --domain tienda1.com --email otro@tienda1.com
+docker compose exec backend python scripts/manage.py password --domain tienda1.com --email dueno@tienda1.com
+docker compose exec backend python scripts/manage.py baja-tienda --domain tienda1.com
+docker compose exec backend python scripts/manage.py alta-tienda --domain tienda1.com
+```
+
+Si no pasas `--password` se genera una y se imprime **una sola vez**.
+
+El dominio se normaliza solo: `HTTPS://Tienda1.com/` se guarda como
+`tienda1.com`, que es contra lo que compara `get_tenant`.
+
+`baja-tienda` es una baja logica: el dominio deja de resolver (panel y tienda
+publica responden 404) pero los datos quedan y `alta-tienda` la reactiva.
+
+> Dar de alta una tienda en la base es **un paso de tres**. Tambien hay que
+> apuntar el DNS del dominio al servidor y agregarle el bloque en nginx
+> (`proxy/`, todavia pendiente).
+
 ## Tests
 
 ```bash

@@ -119,7 +119,7 @@ function CategoryDialog({
               onChange={(e) => setForm((f) => ({ ...f, sort_order: Number(e.target.value) || 0 }))}
               className="max-w-28"
             />
-            <p className="text-xs text-gray-600">Las de numero mas chico aparecen primero.</p>
+            <p className="text-xs text-gray-500">Las de numero mas chico aparecen primero.</p>
           </div>
 
           <DialogFooter>
@@ -174,7 +174,7 @@ export function CategoriesPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Categorias</h1>
-          <p className="text-gray-500 text-sm mt-1">Agrupan los productos de tu tienda.</p>
+          <p className="text-gray-400 text-sm mt-1">Agrupan los productos de tu tienda.</p>
         </div>
         <Button onClick={abrirNueva}>
           <Plus size={16} />
@@ -206,9 +206,9 @@ export function CategoriesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06] text-left">
-                  <th className="px-6 py-3 font-medium text-gray-500">Nombre</th>
-                  <th className="px-6 py-3 font-medium text-gray-500">Descripcion</th>
-                  <th className="px-6 py-3 font-medium text-gray-500 w-20">Orden</th>
+                  <th className="px-6 py-3 font-medium text-gray-400">Nombre</th>
+                  <th className="px-6 py-3 font-medium text-gray-400">Descripcion</th>
+                  <th className="px-6 py-3 font-medium text-gray-400 w-20">Orden</th>
                   <th className="px-6 py-3 w-24" />
                 </tr>
               </thead>
@@ -220,7 +220,7 @@ export function CategoriesPage() {
                   >
                     <td className="px-6 py-3.5 font-medium text-white">{categoria.name}</td>
                     <td className="px-6 py-3.5 text-gray-500">
-                      {categoria.description || <span className="text-gray-700">&mdash;</span>}
+                      {categoria.description || <span className="text-gray-600">&mdash;</span>}
                     </td>
                     <td className="px-6 py-3.5 text-gray-500">{categoria.sort_order}</td>
                     <td className="px-6 py-3.5">

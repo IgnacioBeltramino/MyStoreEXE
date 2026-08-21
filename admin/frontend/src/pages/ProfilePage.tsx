@@ -60,7 +60,7 @@ function ProfileForm({ profile }: { profile: StoreProfile | null }) {
         </div>
       )}
 
-      <Card>
+      <Card className="max-w-2xl">
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
@@ -141,7 +141,7 @@ export function ProfilePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Mi Tienda</h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-gray-400 text-sm mt-1">
           Estos datos son los que ven tus clientes en la tienda.
         </p>
       </div>

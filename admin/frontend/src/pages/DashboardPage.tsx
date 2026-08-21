@@ -1,119 +1,158 @@
 import { Link } from "react-router-dom";
-import { AlertCircle, ShoppingBag, Store, Tag } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Check, ChevronRight, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useStats } from "@/hooks/useStats";
 
 export function DashboardPage() {
   const { data, isLoading, isError, refetch } = useStats();
 
-  const tarjetas = [
-    {
-      label: "Productos activos",
-      value: data?.active_products ?? 0,
-      icon: ShoppingBag,
-      color: "text-blue-400",
-      bg: "bg-blue-500/10 border border-blue-500/20",
-      to: "/products",
-    },
-    {
-      label: "Categorias",
-      value: data?.active_categories ?? 0,
-      icon: Tag,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10 border border-emerald-500/20",
-      to: "/categories",
-    },
+  // Solo tres metricas, y las tres son numeros. El estado del perfil no es una
+  // metrica: es texto, y ponerlo en la misma fila obligaba a que "Completo"
+  // compitiera en tamano con un "4". Se muestra arriba, al lado del nombre.
+  const metricas = [
+    { label: "Productos activos", value: data?.active_products ?? 0, to: "/products" },
+    { label: "Categorias", value: data?.active_categories ?? 0, to: "/categories" },
     {
       label: "Sin categoria",
       value: data?.uncategorized_products ?? 0,
-      icon: AlertCircle,
-      color: "text-orange-400",
-      bg: "bg-orange-500/10 border border-orange-500/20",
       to: "/products",
-    },
-    {
-      label: "Perfil",
-      value: data?.profile_complete ? "Completo" : "Incompleto",
-      icon: Store,
-      color: "text-violet-400",
-      bg: "bg-violet-500/10 border border-violet-500/20",
-      to: "/profile",
+      // El ambar solo aparece si hay algo que corregir. Un cero no es un problema.
+      alerta: (data?.uncategorized_products ?? 0) > 0,
     },
   ];
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          {data?.store_name ? `Resumen de ${data.store_name}` : "Resumen de tu tienda"}
-        </p>
-      </div>
+  const pendientes = [
+    {
+      mostrar: data ? !data.profile_complete : false,
+      to: "/profile",
+      icon: Store,
+      texto: "Completa el perfil de tu tienda",
+    },
+    {
+      mostrar: data ? data.uncategorized_products > 0 : false,
+      to: "/products",
+      icon: AlertCircle,
+      texto: data
+        ? `Tenes ${data.uncategorized_products} ${
+            data.uncategorized_products === 1 ? "producto sin categoria" : "productos sin categoria"
+          }`
+        : "",
+    },
+  ].filter((p) => p.mostrar);
 
-      {isError ? (
-        <Card>
-          <CardContent className="p-10 text-center">
-            <p className="text-sm text-gray-400">No pudimos cargar los datos de tu tienda.</p>
-            <Button variant="outline" className="mt-4" onClick={() => refetch()}>
-              Reintentar
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {tarjetas.map(({ label, value, icon: Icon, color, bg, to }) => (
-            <Link key={label} to={to} className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-              <Card className="h-full hover:border-white/[0.12] transition-all duration-200 hover:shadow-lg hover:shadow-black/40 hover:-translate-y-0.5">
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className={`${bg} ${color} p-3 rounded-xl`}>
-                    <Icon size={22} />
-                  </div>
-                  <div className="min-w-0">
-                    {isLoading ? (
-                      <Skeleton className="h-8 w-14" />
-                    ) : (
-                      <p className="text-2xl font-bold text-white truncate">{value}</p>
-                    )}
-                    <p className="text-xs text-gray-500 mt-0.5">{label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="p-10 text-center">
+          <p className="text-sm text-gray-400">No pudimos cargar los datos de tu tienda.</p>
+          <Button variant="outline" className="mt-4" onClick={() => refetch()}>
+            Reintentar
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* El nombre del negocio es el titulo. "Dashboard" no le dice nada a nadie:
+          el comerciante quiere ver su tienda, no la palabra dashboard. */}
+      <header className="surgir">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">Tu tienda</p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-2">
+          {isLoading ? (
+            <Skeleton className="h-9 w-56" />
+          ) : (
+            <h1 className="text-3xl font-semibold tracking-tight text-white">
+              {data?.store_name || "Tu tienda"}
+            </h1>
+          )}
+          {!isLoading && data && <ChipPerfil completo={data.profile_complete} />}
         </div>
-      )}
+      </header>
+
+      {/* Una sola superficie dividida por hairlines, no cuatro tarjetas sueltas:
+          se lee como un tablero y no como cajas apiladas. */}
+      <section
+        className="surgir grid grid-cols-1 divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.06] bg-[#0f0f1a] sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+        style={{ animationDelay: "60ms" }}
+      >
+        {metricas.map(({ label, value, to, alerta }) => (
+          <Link
+            key={label}
+            to={to}
+            className="group relative px-5 py-6 transition-colors duration-150 hover:bg-white/[0.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+          >
+            <p className="text-[13px] font-medium text-gray-400">{label}</p>
+            {isLoading ? (
+              <Skeleton className="mt-2.5 h-9 w-16" />
+            ) : (
+              <p
+                className={cn(
+                  "mt-2 text-4xl font-semibold tabular-nums tracking-tight",
+                  alerta ? "text-amber-400" : "text-white"
+                )}
+              >
+                {value}
+              </p>
+            )}
+            <ArrowUpRight
+              size={15}
+              aria-hidden
+              className="absolute right-4 top-5 text-gray-500 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            />
+          </Link>
+        ))}
+      </section>
 
       {/* Solo aparece cuando hay algo que hacer, para no ocupar espacio al pedo. */}
-      {!isLoading && !isError && data && (data.uncategorized_products > 0 || !data.profile_complete) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Para terminar de configurar</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {!data.profile_complete && (
+      {!isLoading && pendientes.length > 0 && (
+        <section className="surgir" style={{ animationDelay: "120ms" }}>
+          <h2 className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">
+            Para terminar de configurar
+          </h2>
+          <div className="mt-3 divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.06] bg-[#0f0f1a]">
+            {pendientes.map(({ to, icon: Icon, texto }) => (
               <Link
-                to="/profile"
-                className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                key={texto}
+                to={to}
+                className="group flex items-center gap-3 px-5 py-3.5 transition-colors duration-150 hover:bg-white/[0.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
               >
-                <Store size={15} />
-                Completa el perfil de tu tienda
+                <Icon size={16} aria-hidden className="shrink-0 text-amber-400" />
+                <span className="flex-1 text-sm text-gray-300 group-hover:text-white">{texto}</span>
+                <ChevronRight
+                  size={16}
+                  aria-hidden
+                  className="shrink-0 text-gray-600 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-gray-400"
+                />
               </Link>
-            )}
-            {data.uncategorized_products > 0 && (
-              <Link
-                to="/products"
-                className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors"
-              >
-                <AlertCircle size={15} />
-                Tenes {data.uncategorized_products}{" "}
-                {data.uncategorized_products === 1 ? "producto sin categoria" : "productos sin categoria"}
-              </Link>
-            )}
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        </section>
       )}
     </div>
+  );
+}
+
+function ChipPerfil({ completo }: { completo: boolean }) {
+  if (completo) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-gray-300">
+        <Check size={12} aria-hidden className="text-emerald-400" />
+        Perfil completo
+      </span>
+    );
+  }
+  return (
+    <Link
+      to="/profile"
+      className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 transition-colors hover:bg-amber-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    >
+      <AlertCircle size={12} aria-hidden />
+      Perfil incompleto
+    </Link>
   );
 }
